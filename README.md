@@ -18,7 +18,7 @@ kafka-server-start.sh /opt/kafka/config/server.properties
 - Prepare an input topic for the kafka producer
 
 ```$xslt
-> bin/kafka-topics.sh --create \
+> kafka-topics.sh --create \
     --bootstrap-server localhost:9092 \
     --replication-factor 1 \
     --partitions 1 \
