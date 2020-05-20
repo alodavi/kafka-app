@@ -1,19 +1,21 @@
 package consumer
 
 import java.time.Duration
-import java.util.{Collections, Properties}
+import java.util.Collections
 
 import common.topics.KafkaTopics
-import consumer.config.KafkaConsumerConfig
+import consumer.config.{ConsumerWithStreamingProps, KafkaConsumerConfig}
 import org.apache.kafka.clients.consumer.KafkaConsumer
 
 import scala.jdk.CollectionConverters._
 
-object Consumer extends App with KafkaConsumerConfig with KafkaTopics {
+object ConsumerWithStreaming
+    extends App
+    with KafkaConsumerConfig
+    with ConsumerWithStreamingProps
+    with KafkaTopics {
 
-  val properties = new Properties
-
-  setProperties()(properties)
+  setProperties
 
   val consumer = new KafkaConsumer[String, String](properties)
 
