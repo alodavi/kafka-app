@@ -1,6 +1,18 @@
 # Kafka App
+[![Build Status](https://travis-ci.com/alodavi/kafka-app.svg?branch=master)](https://travis-ci.com/alodavi/kafka-app)
 
 ## Architecture
+
+This app is composed of a `Producer` (to be run from the command line) and two `Consumers`. The `SimpleConsumer` just 
+fetches data from the Kafka broker and returns the sum of the unique ids (that can be used e.g. to calculate how many 
+unique users are using the app at a given point in time). The `ConsumerWithStream` app is connected to the `StreamingApp`
+and calculates how many times the single ids appear in the stream (that could be used e.g. to recognize the "power users", 
+the users that use the app the most).
+
+While the `SimpleConsumer` subscribe to the same topic to which the `Producer` is sending the data - `streams-app-input` - 
+the `ConsumerWithStream` subscribes to the output topic to which the `StreamingApp` is sending the data - `streams-uid-count-output`.
+
+Hereby is the structure of the project: 
 
 ```$xslt
 src
