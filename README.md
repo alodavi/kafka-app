@@ -1,5 +1,30 @@
 # Kafka App
 
+##Architecture
+
+```$xslt
+src
+├── main
+│   └── scala
+│       ├── common
+│       │   └── topics
+│       │       └── KafkaTopics.scala
+│       ├── consumer
+│       │   ├── config
+│       │   │   ├── ConsumerWithStreamingProps.scala
+│       │   │   ├── KafkaConsumerConfig.scala
+│       │   │   └── SimpleConsumerProps.scala
+│       │   ├── ConsumerWithStreaming.scala
+│       │   └── SimpleConsumer.scala
+│       └── streaming
+│           ├── config
+│           │   └── KafkaStreamConfig.scala
+│           └── StreamingApp.scala
+└── test
+    └── scala
+
+```
+
 ## Instructions
 
 - Install kafka
@@ -41,9 +66,13 @@ kafka-server-start.sh /opt/kafka/config/server.properties
  zcat stream.jsonl.gz | kafka-console-producer.sh --bootstrap-server localhost:9092 --topic streams-app-input
 ```
 
+- Start the `SimpleConsumer` application
+
+### Starting the Kafka Streams app
+
 - Start the `StreamingApp` application
 
-- Inspect the the output of the application or run the `Consumer` application.
+- Inspect the the output of the application or run the `ConsumerWithStreaming` application.
 ```$xslt
 kafka-console-consumer.sh --bootstrap-server localhost:9092 \
     --topic streams-uid-count-output \
@@ -54,3 +83,58 @@ kafka-console-consumer.sh --bootstrap-server localhost:9092 \
     --property key.deserializer=org.apache.kafka.common.serialization.StringDeserializer \
     --property value.deserializer=org.apache.kafka.common.serialization.LongDeserializer
 ```
+
+## Performance Tuning
+
+When it comes to performance testing we have to consider 2 important metrics:
+
+- latency: how long it takes to process one event
+- throughput: how many events arrive within a specific amount of time
+
+Kafka has high throughput: if you have a 3 node cluster you should be able to handle 100 K events per second.
+For what concerns latency it should take 1 to 2 ms to process one single event.
+
+### Tuning Kafka Producers
+
+Kafka uses an asynchronous publish/subscribe model. When your producer calls the `send() ` command, the result returned 
+is a future. The future provides methods to let you check the status of the information in process. When the batch is 
+ready, the producer sends it to the broker. The Kafka broker waits for an event, receives the result, and then responds 
+that the transaction is complete.
+
+When you use `Producer.send()`, you fill up buffers on the producer. When a buffer is full, the producer sends the
+buffer to the Kafka broker and begins to refill the buffer.
+
+Two parameters are particularly important for latency and throughput: batch size and linger time.
+
+### Tuning Brokers
+
+Topics are divided into partitions. Each partition has a leader. Most partitions are written into leaders with multiple 
+replicas. When the leaders are not balanced properly, one might be overworked, compared to others.
+
+### Tuning Kafka Consumer
+
+Consumers can create throughput issues on the other side of the pipeline. The maximum number of consumers for a topic 
+is equal to the number of partitions. You need enough partitions to handle all the consumers needed to keep up with the 
+producers.
+
+Consumers in the same consumer group split the partitions among them. Adding more consumers to a group can enhance 
+performance. 
+
+Using this as a [reference](https://engineering.linkedin.com/kafka/benchmarking-apache-kafka-2-million-writes-second-three-cheap-machines)
+we see that the test with a single consumer scores pretty well with `940,521 records/sec` and `89.7 MB/sec`
+
+```$xslt
+bin/kafka-consumer-perf-test.sh --topic streams-app-input --bootstrap-server localhost:9092 --messages 100000 --threads 1
+```
+
+| MB/sec        | Messages/sec   |
+| :-------------: |:-------------:|
+| 199.0840      | 100394 |
+
+Increasing the number of threads to 3 doesn't affect performance:
+```$xslt
+bin/kafka-consumer-perf-test.sh --topic streams-app-input --bootstrap-server localhost:9092 --messages 100000 --threads 3
+```
+| MB/sec        | Messages/sec   |
+| :-------------: |:-------------:|
+| 199.0840      | 100394 |

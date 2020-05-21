@@ -21,7 +21,6 @@ object ConsumerWithStreaming
 
   consumer.subscribe(Collections.singleton(OUTPUT_TOPIC))
 
-  //TODO replace this while loop
   while (true) {
     val records = consumer.poll(Duration.ofMillis(100)).asScala
 

@@ -44,7 +44,6 @@ object StreamingApp extends App with KafkaTopics with KafkaStreamConfig {
       .to(OUTPUT_TOPIC, Produced.`with`(Serdes.String(), Serdes.Long))
   }
 
-  //val props = getStreamsConfig
   val builder = new StreamsBuilder()
   createUUIDCountStream(builder)
   val streams = new KafkaStreams(builder.build, getStreamsConfig())

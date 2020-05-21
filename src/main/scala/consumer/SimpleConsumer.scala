@@ -1,9 +1,9 @@
 package consumer
 
 import java.time.Duration
-import java.util.{Collections, Properties}
+import java.util.Collections
 
-import com.google.gson.JsonParser
+import com.google.gson.{JsonParser, JsonSyntaxException}
 import common.topics.KafkaTopics
 import consumer.config.{KafkaConsumerConfig, SimpleConsumerProps}
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -36,15 +36,18 @@ object SimpleConsumer
     if (map.contains(id)) map.updated(id, map(id) + 1) else map + (id -> 1)
   }
 
-  //TODO replace this while loop
   while (true) {
     val records = consumer.poll(Duration.ofMillis(100)).asScala
 
     for (record <- records) {
-      val uid = parseJson(record.value())
-      mapOfIds = lookUpMap(mapOfIds, uid)
-      println(s"uid: ${record.key}, count: ${record.value}")
-      println("Unique ids count: " + mapOfIds.keySet.size)
+      try {
+        val uid = parseJson(record.value())
+        mapOfIds = lookUpMap(mapOfIds, uid)
+        println("Unique ids count: " + mapOfIds.keySet.size)
+      } catch {
+        case e: JsonSyntaxException => println("Couldn't parse json")
+      }
+
     }
 
   }
