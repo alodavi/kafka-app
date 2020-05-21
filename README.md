@@ -1,6 +1,6 @@
 # Kafka App
 
-##Architecture
+## Architecture
 
 ```$xslt
 src
