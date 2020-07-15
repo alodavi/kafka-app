@@ -1,5 +1,5 @@
 # Kafka App
-[![Build Status](https://travis-ci.com/alodavi/kafka-app.svg?branch=master)](https://travis-ci.com/alodavi/kafka-app)
+[![Build Status](https://travis-ci.com/doriancodes/kafka-app.svg?branch=master)](https://travis-ci.com/alodavi/kafka-app)
 
 ## Architecture
 
